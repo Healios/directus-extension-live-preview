@@ -1,5 +1,6 @@
 import { AxiosInstance } from "axios";
 import { Relation, Field } from "@directus/types"
+import { getRelationType } from "@directus/utils";
 
 export async function getRelations(api: AxiosInstance): Promise<Relation[]>
 {
