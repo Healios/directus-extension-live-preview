@@ -47,18 +47,57 @@ export function getRelationForField(relations: Relation[], fieldInfo: Field): Re
     return foundRelations.find((relation) => relation.collection === fieldInfo.collection && relation.field === fieldInfo.field) || null;
 };
 
-export async function updateRelatedItemsRecursively(api: AxiosInstance, relations: Relation[], collection: string, item: any, oldFormValues: any, newFormValues: any)
+export async function testRecursiveRelations(api: AxiosInstance, relations: Relation[], collection: string, item: any)
 {
+    // Get more information about the current collection's fields.
+    const fieldTypeResponse = await api.get(`/fields/${collection}`);
+    if (fieldTypeResponse.status !== 200)
+    {
+        console.error(`[Live Preview] Unable to retrieve field information from collection ${collection}`);
+        return "";
+    }
+
     for(const field of Object.keys(item))
     {
         // Get more information about the current field.
-        const fieldTypeResponse = await api.get(`/fields/${collection}`);
-        if (fieldTypeResponse.status !== 200)
-        {
-            console.error(`[Live Preview] Unable to retrieve meta information about field ${field}`);
-            return "";
-        }
         const fieldInfo = fieldTypeResponse.data.data.find((fieldInfo: Field) => fieldInfo.field === field) as Field;
+        if (!fieldInfo)
+        {
+            console.log(`Field: ${field} - exiting at fieldinfo`);
+            continue;
+        }
+
+        // Get more information about the current fields relations.
+        const fieldRelations = getRelationsForField(relations, fieldInfo);
+        if (fieldRelations.length === 0)
+        {
+            console.log(`Field: ${field} - exiting at relation`);
+            continue;
+        }
+        const fieldRelation = fieldRelations.find(relation => relation.meta?.one_collection === fieldInfo.collection && relation.meta?.one_field === fieldInfo.field);
+        if (!fieldRelation) continue;
+        const fieldRelationType = getRelationType({ relation: fieldRelation, collection: fieldInfo.collection, field: fieldInfo.field });
+        console.log(`Field: ${field} - type: ${fieldRelationType}`);
+    }
+
+    return;
+}
+
+export async function updateRelatedItemsRecursively(api: AxiosInstance, relations: Relation[], collection: string, item: any, oldFormValues: any, newFormValues: any)
+{
+    // Get more information about the current collection's fields.
+    const fieldTypeResponse = await api.get(`/fields/${collection}`);
+    if (fieldTypeResponse.status !== 200)
+    {
+        console.error(`[Live Preview] Unable to retrieve field information from collection ${collection}`);
+        return "";
+    }
+
+    for(const field of Object.keys(item))
+    {
+        // Get more information about the current field.
+        const fieldInfo = fieldTypeResponse.data.data.find((fieldInfo: Field) => fieldInfo.field === field) as Field;
+        if (!fieldInfo) continue;
 
         switch (true)
         {
