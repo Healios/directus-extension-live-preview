@@ -2,7 +2,7 @@
 	import { inject, ref, onMounted, watch } from "vue";
 	import { useApi } from "@directus/extensions-sdk";
 	import { Relation, Field } from "@directus/types";
-	import { getRelations, updateRelatedItemsRecursively, testRecursiveRelations } from "./helpers";
+	import { getRelations, testRecursiveRelations } from "./helpers";
 
 	// Properties.
 	interface Properties
@@ -43,9 +43,8 @@
 			if (!item) return;
 
 			// Handle changes to related items (refactor this to work recursively, so it can be applied to properties of m2a items).
-			const data = { ...item["pages_by_id"] };
-			await testRecursiveRelations(api, relations, collection, data);
-			// await updateRelatedItemsRecursively(api, relations, collection, data, oldValue, newValue);
+			let data = { ...item["pages_by_id"] };
+			data = await testRecursiveRelations(api, relations, collection, data, oldValue, newValue);
 
 			// Send item to the preview iframe.
 			const previewFrame = (document.getElementById("frame") as HTMLIFrameElement)?.contentWindow;
