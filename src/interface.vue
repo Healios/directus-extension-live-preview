@@ -2,7 +2,7 @@
 	import { inject, ref, onMounted, watch } from "vue";
 	import { useApi } from "@directus/extensions-sdk";
 	import { Relation, Field } from "@directus/types";
-	import { getRelations, testRecursiveRelations } from "./helpers";
+	import { getRelations, findDifferences, findCRUDProperties, resolvePropertyPath, getFieldsWithRelations, testRecursiveRelations } from "./helpers";
 
 	// Properties.
 	interface Properties
@@ -35,6 +35,7 @@
 			if (debugLogs)
 			{
 				console.log("[Live Preview] Values received from form:");
+				console.log(oldValue);
 				console.log(newValue);
 			}
 
@@ -44,7 +45,16 @@
 
 			// Handle changes to related items (refactor this to work recursively, so it can be applied to properties of m2a items).
 			let data = { ...item["pages_by_id"] };
-			data = await testRecursiveRelations(api, relations, collection, data, oldValue, newValue);
+			//const fieldsWithRelations = await getFieldsWithRelations(api, relations, collection, undefined, undefined, undefined, ["user_created", "user_updated", "folder", "uploaded_by", "modified_by", "translations"]);
+			const differences = findDifferences(oldValue, newValue);
+			const crudProperties = findCRUDProperties(differences);
+			console.log(differences);
+			for(const prop of crudProperties)
+			{
+				console.log(prop);
+				console.log(resolvePropertyPath(prop, differences));
+			}
+			// data = await testRecursiveRelations(api, relations, collection, data, oldValue, newValue);
 
 			// Send item to the preview iframe.
 			const previewFrame = (document.getElementById("frame") as HTMLIFrameElement)?.contentWindow;
