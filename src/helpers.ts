@@ -159,7 +159,7 @@ export async function getFieldsWithRelations(api: AxiosInstance, relations: Rela
 
 export function findDifferences(obj1: any, obj2: any)
 {
-    let diffs: any = {};
+    const diffs: any = {};
 
     const deepDiff = (obj1: any, obj2: any, path = "") =>
     {
@@ -173,7 +173,7 @@ export function findDifferences(obj1: any, obj2: any)
 
         if (Array.isArray(obj1) && Array.isArray(obj2))
         {
-            let maxLength = Math.max(obj1.length, obj2.length);
+            const maxLength = Math.max(obj1.length, obj2.length);
 
             for (let i = 0; i < maxLength; i++)
                 deepDiff(obj1[i], obj2[i], `${path}[${i}]`);
@@ -181,18 +181,20 @@ export function findDifferences(obj1: any, obj2: any)
             return;
         }
 
-        let keys1 = Object.keys(obj1);
-        let keys2 = Object.keys(obj2);
-        let allKeys = new Set([...keys1, ...keys2]);
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+        const allKeys = new Set([...keys1, ...keys2]);
 
         for (let key of allKeys)
         {
-            let newPath = path ? `${path}.${key}` : key;
+            const newPath = path ? `${path}.${key}` : key;
 
-            if (!keys1.includes(key))
+            if (obj2[key] === undefined || (Array.isArray(obj2[key]) && obj2[key].length === 0)) continue;
+
+            if (!(key in keys1))
                 diffs[newPath] = { obj1: undefined, obj2: obj2[key] };
-            else if (!keys2.includes(key))
-                diffs[newPath] = { obj1: obj1[key], obj2: undefined };
+            else if (!(key in keys2))
+                continue;
             else
                 deepDiff(obj1[key], obj2[key], newPath);
         }

@@ -48,12 +48,12 @@
 			//const fieldsWithRelations = await getFieldsWithRelations(api, relations, collection, undefined, undefined, undefined, ["user_created", "user_updated", "folder", "uploaded_by", "modified_by", "translations"]);
 			const differences = findDifferences(oldValue, newValue);
 			const crudProperties = findCRUDProperties(differences);
+			const propsToChange = crudProperties.map(prop => resolvePropertyPath(prop, differences));
+			console.log("START");
 			console.log(differences);
-			for(const prop of crudProperties)
-			{
-				console.log(prop);
-				console.log(resolvePropertyPath(prop, differences));
-			}
+			console.log(crudProperties);
+			console.log(propsToChange);
+			console.log("END");
 			// data = await testRecursiveRelations(api, relations, collection, data, oldValue, newValue);
 
 			// Send item to the preview iframe.
